@@ -1,5 +1,7 @@
 import re
 
+print("HELLO WORLD!")
+
 class CobolPatterns:
     opt_pattern_format = "({})?"
 
@@ -10,11 +12,11 @@ class CobolPatterns:
     row_pattern_pic = r'\s+PIC\s+(?P<pic>\S+)'
     row_pattern_end = r'\.$'
 
-    row_pattern = re.compile(row_pattern_base + 
-                             opt_pattern_format.format(row_pattern_redefines) + 
-                             opt_pattern_format.format(row_pattern_occurs) + 
-                             opt_pattern_format.format(row_pattern_indexed_by) + 
-                             opt_pattern_format.format(row_pattern_pic) + 
+    row_pattern = re.compile(row_pattern_base +
+                             opt_pattern_format.format(row_pattern_redefines) +
+                             opt_pattern_format.format(row_pattern_occurs) +
+                             opt_pattern_format.format(row_pattern_indexed_by) +
+                             opt_pattern_format.format(row_pattern_pic) +
                              row_pattern_end)
 
     pic_pattern_repeats = re.compile(r'(.)\((\d+)\)')
@@ -30,9 +32,9 @@ def parse_pic_string(pic_str):
 
         if not match:
             break
-        
+
         expanded_str = match.group(1) * int(match.group(2))
-        
+
         pic_str = CobolPatterns.pic_pattern_repeats.sub(expanded_str, pic_str, 1)
 
     # Match to types
@@ -63,7 +65,7 @@ def clean_cobol(lines):
 
     output = []
 
-    for row in lines:            
+    for row in lines:
         row = row[6:72].rstrip()
 
         if row == "" or row[0] in ('*','/'):
@@ -75,7 +77,7 @@ def clean_cobol(lines):
             output.append(" ".join(holder))
 
             holder = []
-            
+
 
     if len(holder) > 0:
         print "[WARNING] probably invalid COBOL - found unfinished line: ", " ".join(holder)
@@ -85,7 +87,7 @@ def clean_cobol(lines):
 """
 Parses the COBOL
  - converts the COBOL line into a dictionarty containing the information
- - parses the pic information into type, length, precision 
+ - parses the pic information into type, length, precision
  - handles redefines
 """
 def parse_cobol(lines):
@@ -150,7 +152,7 @@ def handle_occurs(lines, occurs, level_diff=0, name_postfix=""):
     output = []
 
     for i in range(1, occurs+1):
-        
+
         skipTill = 0
         new_name_postfix = name_postfix if occurs == 1 else name_postfix + '-' + str(i)
 
@@ -171,7 +173,7 @@ def handle_occurs(lines, occurs, level_diff=0, name_postfix=""):
                 # + "-" + str(i) if occurs > 1 else row['name'] + name_postfix
 
                 output.append(new_row)
-            
+
             else:
                 if row["pic"] is not None:
                     # If it has occurs and pic just repeat the same line multiple times
@@ -182,7 +184,7 @@ def handle_occurs(lines, occurs, level_diff=0, name_postfix=""):
 
                         # First time occurs is just 1, we don't want to add _1 after *every* field
                         row_to_add["name"] = row['name'] + new_name_postfix + '-' + str(j)
-                        # + "-" + str(i) + "-" + str(j) if occurs > 1 else row['name'] + name_postfix + "-" + str(j) 
+                        # + "-" + str(i) + "-" + str(j) if occurs > 1 else row['name'] + name_postfix + "-" + str(j)
 
                         output.append(row_to_add)
 
@@ -234,7 +236,7 @@ def clean_names(lines, ensure_unique_names=False, strip_prefix=False, make_datab
     return lines
 
 def process_cobol(lines):
-    return clean_names(denormalize_cobol(parse_cobol(clean_cobol(lines))), True, True, True)    
+    return clean_names(denormalize_cobol(parse_cobol(clean_cobol(lines))), True, True, True)
 
 # Prints a Copybook compatible file
 def print_cobol(lines):
@@ -301,7 +303,7 @@ if __name__ == '__main__':
     parser.add_argument("--skip-denormalize", help="Skips denormalizing the COBOL.", default=False, action="store_true")
     parser.add_argument("--skip-strip-prefix", help="Skips stripping the prefix from the names.", default=False, action="store_true")
 
-    args = parser.parse_args() 
+    args = parser.parse_args()
 
     if not os.path.isfile(args.filename):
         print "Could not find", args.filename
